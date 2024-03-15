@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - '*'
+  paths:
+    include:
+      - 'src/*'
+
+parameters:
+- name: runTests
+  displayName: Run tests
+  type: boolean
+  default: true
+- name: sonarqubeInstance
+  displayName: 'Select SonarQube for v9.9 or SonarQubeLatest for 10.4'
+  type: string
+  default: 'SonarQube'
+  values:
+  - 'SonarQube'
+  - 'SonarQubeLatest'
+
+pool: DEFRA-COMMON-ubuntu2004-SSV3
+
+variables:
+  - name: solutionFolder
+    value: src
+  - name: projectFolder
+  - name: sonarQubeProjectKey
+    value: zstest
+  - name: sonarQubeProjectName
+    value: zstest
+  - name: runNugetTasks
+    value: true
+
+resources:
+  repositories:
+    - repository: CommonTemplates
+      name: tst
+      type: github
+      endpoint: DEFRA
+      ref: main
+
+extends:
+  template: epr-build-pipeline.yaml@CommonTemplates
+  parameters:
+    solutionFolder: ${{ variables.solutionFolder }}
+    projectFolder: ${{ variables.projectFolder }}
+    testProjectFolder: ${{ variables.testProjectFolder }}
+    sonarQubeProjectKey: ${{ variables.sonarQubeProjectKey }}
+    sonarQubeProjectName: ${{ variables.sonarQubeProjectName }}
+    runTests: ${{ parameters.runTests }}
+    azureSubscription: $(azureSubscription)
+    acrAzureContainerRegistryName: $(acr.azureContainerRegistryName)
+    acrRepositoryName: $(acr.repositoryName)
+    branchName: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), '/', '_') }}
+    runNugetTasks: ${{ variables.runNugetTasks }}
+    serviceName: $(serviceName)
+    sonarqubeInstance: ${{ parameters.sonarqubeInstance }}
